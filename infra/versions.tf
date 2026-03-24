@@ -2,11 +2,11 @@ terraform {
   required_version = ">= 1.6.0"
 
   backend "s3" {
-    bucket         = "finops-ai-advisor-tfstate-110735825932"
-    key            = "global/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    use_lockfile   = true
+    bucket       = "finops-ai-advisor-tfstate-110735825932"
+    key          = "global/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
   }
 
   required_providers {
