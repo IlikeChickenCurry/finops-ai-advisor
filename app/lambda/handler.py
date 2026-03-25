@@ -2,7 +2,7 @@ import json
 import boto3
 import os
 
-s3 = boto3.client('s3')
+s3 = boto3.client("s3")
 bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
 INPUT_BUCKET = os.environ["INPUT_BUCKET"]
@@ -31,6 +31,14 @@ def analyze(resources):
                 "estimated_savings": int(r["monthly_cost"] * 0.2)
             })
 
+        if r["service"] == "RDS" and r.get("cpu_usage_percent", 100) < 20:
+            recommendations.append({
+                "resource_id": r["resource_id"],
+                "issue": "Low CPU usage",
+                "recommendation": "Downsize database instance",
+                "estimated_savings": int(r["monthly_cost"] * 0.25)
+            })
+
     return recommendations
 
 
@@ -39,9 +47,39 @@ def lambda_handler(event, context):
         print(f"Reading from bucket={INPUT_BUCKET}, key={INPUT_KEY}")
 
         response = s3.get_object(Bucket=INPUT_BUCKET, Key=INPUT_KEY)
-        data = json.loads(response['Body'].read())
+        data = json.loads(response["Body"].read())
 
         print(f"Loaded {len(data)} resources")
+
+        prompt = f"""
+Analyze this cloud cost data.
+
+Rules:
+- Respond in JSON only
+- No introductions
+- No conclusions
+- No markdown
+- No explanations outside the JSON
+- Give at most 1 recommendation per resource
+- Keep recommendation text short
+- Use only the data provided
+- Do not invent missing metrics
+- Do not suggest actions not justified by the input
+
+Output format:
+{{
+  "recommendations": [
+    {{
+      "resource_id": "string",
+      "issue": "string",
+      "recommendation": "string"
+    }}
+  ]
+}}
+
+Data:
+{json.dumps(data)}
+"""
 
         response_bedrock = bedrock.invoke_model(
             modelId=BEDROCK_MODEL_ID,
@@ -51,7 +89,7 @@ def lambda_handler(event, context):
                         "role": "user",
                         "content": [
                             {
-                                "text": f"Analyze this cloud cost data and give optimization advice: {data}"
+                                "text": prompt
                             }
                         ]
                     }
@@ -62,23 +100,29 @@ def lambda_handler(event, context):
         )
 
         result_text = json.loads(response_bedrock["body"].read())
-
         print(f"Bedrock response: {result_text}")
-        results = analyze(data)
 
-        print(f"Generated {len(results)} recommendations")
+        rules_results = analyze(data)
+
+        print(f"Generated {len(rules_results)} rules-based recommendations")
 
         s3.put_object(
             Bucket=INPUT_BUCKET,
             Key=OUTPUT_KEY,
-            Body=json.dumps(results)
+            Body=json.dumps({
+                "rules_based_results": rules_results,
+                "bedrock_response": result_text
+            })
         )
 
         print(f"Results written to {OUTPUT_KEY}")
 
         return {
             "statusCode": 200,
-            "body": json.dumps(results)
+            "body": json.dumps({
+                "rules_based_results": rules_results,
+                "bedrock_response": result_text
+            })
         }
 
     except Exception as e:
