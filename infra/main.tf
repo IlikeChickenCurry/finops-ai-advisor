@@ -68,12 +68,22 @@ resource "aws_lambda_function" "finops_analyzer" {
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
   timeout = 10
+  reserved_concurrent_executions = 1
+
+  tracing_config {
+    mode = "Active"
+  }
 }
 
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_file = "${path.module}/../app/lambda/handler.py"
   output_path = "${path.module}/lambda_function.zip"
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_xray" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
 }
 
 data "aws_caller_identity" "current" {}
