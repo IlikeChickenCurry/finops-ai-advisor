@@ -46,7 +46,16 @@ def lambda_handler(event, context):
         response_bedrock = bedrock.invoke_model(
             modelId=BEDROCK_MODEL_ID,
             body=json.dumps({
-                "inputText": f"Analyze this cloud cost data and give optimization advice: {data}"
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "text": f"Analyze this cloud cost data and give optimization advice: {data}"
+                            }
+                        ]
+                    }
+                ]
             }),
             contentType="application/json",
             accept="application/json"
