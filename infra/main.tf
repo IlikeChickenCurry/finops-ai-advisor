@@ -84,6 +84,25 @@ resource "aws_iam_role_policy" "lambda_s3_access" {
   })
 }
 
+resource "aws_iam_role_policy" "lambda_bedrock_access" {
+  name = "${var.project_name}-lambda-bedrock"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "InvokeBedrockModel"
+        Effect = "Allow"
+        Action = [
+          "bedrock:InvokeModel"
+        ]
+        Resource = "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-text-express-v1"
+      }
+    ]
+  })
+}
+
 resource "aws_lambda_function" "finops_analyzer" {
   function_name = "${var.project_name}-${var.environment}-analyzer"
 
