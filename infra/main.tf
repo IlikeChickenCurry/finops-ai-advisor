@@ -72,6 +72,7 @@ resource "aws_lambda_function" "finops_analyzer" {
   tracing_config {
     mode = "Active"
   }
+  
 }
 
 data "archive_file" "lambda_zip" {
