@@ -113,14 +113,14 @@ resource "aws_lambda_function" "finops_analyzer" {
 
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-
-  timeout = 10
+  timeout          = 10
 
   environment {
     variables = {
-      INPUT_BUCKET = aws_s3_bucket.project_data.bucket
-      INPUT_KEY    = "input/data.json"
-      OUTPUT_KEY   = "output/results.json"
+      INPUT_BUCKET     = aws_s3_bucket.project_data.bucket
+      INPUT_KEY        = "input/data.json"
+      OUTPUT_KEY       = "output/results.json"
+      BEDROCK_MODEL_ID = "amazon.titan-text-express-v1"
     }
   }
 
