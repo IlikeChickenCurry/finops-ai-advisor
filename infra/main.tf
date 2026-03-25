@@ -97,7 +97,7 @@ resource "aws_iam_role_policy" "lambda_bedrock_access" {
         Action = [
           "bedrock:InvokeModel"
         ]
-        Resource = "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-text-express-v1"
+        Resource = "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-lite-v1:0"
       }
     ]
   })
@@ -120,7 +120,7 @@ resource "aws_lambda_function" "finops_analyzer" {
       INPUT_BUCKET     = aws_s3_bucket.project_data.bucket
       INPUT_KEY        = "input/data.json"
       OUTPUT_KEY       = "output/results.json"
-      BEDROCK_MODEL_ID = "amazon.titan-text-express-v1"
+      BEDROCK_MODEL_ID = "amazon.nova-lite-v1:0"
     }
   }
 
