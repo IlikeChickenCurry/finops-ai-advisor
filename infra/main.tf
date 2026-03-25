@@ -56,6 +56,34 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_role_policy" "lambda_s3_access" {
+  name = "${var.project_name}-lambda-s3"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid = "ListBucket"
+        Action = [
+          "s3:ListBucket"
+        ]
+        Effect   = "Allow"
+        Resource = aws_s3_bucket.project_data.arn
+      },
+      {
+        Sid = "ObjectAccess"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject"
+        ]
+        Effect   = "Allow"
+        Resource = "${aws_s3_bucket.project_data.arn}/*"
+      }
+    ]
+  })
+}
+
 resource "aws_lambda_function" "finops_analyzer" {
   function_name = "${var.project_name}-${var.environment}-analyzer"
 
@@ -68,6 +96,14 @@ resource "aws_lambda_function" "finops_analyzer" {
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
   timeout = 10
+
+  environment {
+    variables = {
+      INPUT_BUCKET = aws_s3_bucket.project_data.bucket
+      INPUT_KEY    = "input/data.json"
+      OUTPUT_KEY   = "output/results.json"
+    }
+  }
 
   tracing_config {
     mode = "Active"
