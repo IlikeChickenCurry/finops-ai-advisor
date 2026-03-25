@@ -3,10 +3,12 @@ import boto3
 import os
 
 s3 = boto3.client('s3')
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
 INPUT_BUCKET = os.environ["INPUT_BUCKET"]
 INPUT_KEY = os.environ["INPUT_KEY"]
 OUTPUT_KEY = os.environ["OUTPUT_KEY"]
+BEDROCK_MODEL_ID = os.environ["BEDROCK_MODEL_ID"]
 
 
 def analyze(resources):
@@ -41,6 +43,18 @@ def lambda_handler(event, context):
 
         print(f"Loaded {len(data)} resources")
 
+        response_bedrock = bedrock.invoke_model(
+            modelId=BEDROCK_MODEL_ID,
+            body=json.dumps({
+                "inputText": f"Analyze this cloud cost data and give optimization advice: {data}"
+            }),
+            contentType="application/json",
+            accept="application/json"
+        )
+
+        result_text = json.loads(response_bedrock["body"].read())
+
+        print(f"Bedrock response: {result_text}")
         results = analyze(data)
 
         print(f"Generated {len(results)} recommendations")

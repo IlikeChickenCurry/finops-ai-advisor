@@ -121,6 +121,7 @@ resource "aws_lambda_function" "finops_analyzer" {
       INPUT_BUCKET = aws_s3_bucket.project_data.bucket
       INPUT_KEY    = "input/data.json"
       OUTPUT_KEY   = "output/results.json"
+      BEDROCK_MODEL_ID = "amazon.titan-text-express-v1"
     }
   }
 
