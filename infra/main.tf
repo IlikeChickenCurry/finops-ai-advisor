@@ -97,7 +97,7 @@ resource "aws_iam_role_policy" "lambda_bedrock_access" {
         Action = [
           "bedrock:InvokeModel"
         ]
-        Resource = "*"
+        Resource = "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-text-express-v1"
       }
     ]
   })
