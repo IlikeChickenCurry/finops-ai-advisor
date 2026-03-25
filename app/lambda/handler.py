@@ -33,26 +33,31 @@ def analyze(resources):
 
 
 def lambda_handler(event, context):
-    print(f"Reading from bucket={INPUT_BUCKET}, key={INPUT_KEY}")
+    try:
+        print(f"Reading from bucket={INPUT_BUCKET}, key={INPUT_KEY}")
 
-    response = s3.get_object(Bucket=INPUT_BUCKET, Key=INPUT_KEY)
-    data = json.loads(response['Body'].read())
+        response = s3.get_object(Bucket=INPUT_BUCKET, Key=INPUT_KEY)
+        data = json.loads(response['Body'].read())
 
-    print(f"Loaded {len(data)} resources")
+        print(f"Loaded {len(data)} resources")
 
-    results = analyze(data)
+        results = analyze(data)
 
-    print(f"Generated {len(results)} recommendations")
+        print(f"Generated {len(results)} recommendations")
 
-    s3.put_object(
-        Bucket=INPUT_BUCKET,
-        Key=OUTPUT_KEY,
-        Body=json.dumps(results)
-    )
+        s3.put_object(
+            Bucket=INPUT_BUCKET,
+            Key=OUTPUT_KEY,
+            Body=json.dumps(results)
+        )
 
-    print(f"Results written to {OUTPUT_KEY}")
+        print(f"Results written to {OUTPUT_KEY}")
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps(results)
-    }
+        return {
+            "statusCode": 200,
+            "body": json.dumps(results)
+        }
+
+    except Exception as e:
+        print(f"Error during execution: {str(e)}")
+        raise
