@@ -1,4 +1,13 @@
 import json
+import boto3
+import os
+
+s3 = boto3.client('s3')
+
+INPUT_BUCKET = os.environ["INPUT_BUCKET"]
+INPUT_KEY = os.environ["INPUT_KEY"]
+OUTPUT_KEY = os.environ["OUTPUT_KEY"]
+
 
 def analyze(resources):
     recommendations = []
@@ -9,7 +18,7 @@ def analyze(resources):
                 "resource_id": r["resource_id"],
                 "issue": "Low CPU usage",
                 "recommendation": "Downsize instance",
-                "estimated_savings": f"{int(r['monthly_cost'] * 0.3)}$/month"
+                "estimated_savings": int(r["monthly_cost"] * 0.3)
             })
 
         if r["service"] == "EBS" and r.get("volume_type") == "gp2":
@@ -17,17 +26,23 @@ def analyze(resources):
                 "resource_id": r["resource_id"],
                 "issue": "gp2 volume",
                 "recommendation": "Migrate to gp3",
-                "estimated_savings": f"{int(r['monthly_cost'] * 0.2)}$/month"
+                "estimated_savings": int(r["monthly_cost"] * 0.2)
             })
 
     return recommendations
 
 
 def lambda_handler(event, context):
-    with open('/tmp/data.json') as f:
-        data = json.load(f)
+    response = s3.get_object(Bucket=INPUT_BUCKET, Key=INPUT_KEY)
+    data = json.loads(response['Body'].read())
 
     results = analyze(data)
+
+    s3.put_object(
+        Bucket=INPUT_BUCKET,
+        Key=OUTPUT_KEY,
+        Body=json.dumps(results)
+    )
 
     return {
         "statusCode": 200,

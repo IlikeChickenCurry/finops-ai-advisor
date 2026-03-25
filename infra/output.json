@@ -1,0 +1,1 @@
+{"statusCode": 200, "body": "[{\"resource_id\": \"ec2-1\", \"issue\": \"Low CPU usage\", \"recommendation\": \"Downsize instance\", \"estimated_savings\": 36}, {\"resource_id\": \"ebs-1\", \"issue\": \"gp2 volume\", \"recommendation\": \"Migrate to gp3\", \"estimated_savings\": 16}]"}
