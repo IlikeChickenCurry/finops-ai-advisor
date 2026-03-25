@@ -17,3 +17,6 @@ crash.log
 
 # Logs
 *.log
+
+# Terraform generated artifacts
+*.zip
