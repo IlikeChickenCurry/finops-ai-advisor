@@ -67,12 +67,12 @@ resource "aws_lambda_function" "finops_analyzer" {
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
-  timeout                        = 10
-  reserved_concurrent_executions = 1
+  timeout = 10
 
   tracing_config {
     mode = "Active"
   }
+
 }
 
 data "archive_file" "lambda_zip" {
