@@ -105,6 +105,11 @@ Data:
 
             result_text = json.loads(response_bedrock["body"].read())
             print(f"Bedrock response: {result_text}")
+
+            bedrock_recommendations = json.loads(
+                result_text["output"]["message"]["content"][0]["text"]
+            )
+
         else:
             print("Bedrock disabled")
 
@@ -114,7 +119,7 @@ Data:
 
         final_output = {
             "rules_based_results": rules_results,
-            "bedrock_response": result_text
+            "bedrock_recommendations": bedrock_recommendations if ENABLE_BEDROCK else None
         }
 
         s3.put_object(
