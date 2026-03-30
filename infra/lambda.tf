@@ -27,9 +27,10 @@ resource "aws_lambda_function" "finops_analyzer" {
   environment {
     variables = {
       INPUT_BUCKET     = aws_s3_bucket.project_data.bucket
-      INPUT_KEY        = "input/data.json"
-      OUTPUT_KEY       = "output/results.json"
-      BEDROCK_MODEL_ID = "amazon.nova-lite-v1:0"
+      INPUT_KEY        = var.input_key
+      OUTPUT_KEY       = var.output_key
+      ENABLE_BEDROCK   = var.enable_bedrock
+      BEDROCK_MODEL_ID = var.bedrock_model_id
     }
   }
 
