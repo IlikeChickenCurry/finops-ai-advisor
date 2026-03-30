@@ -9,6 +9,7 @@ INPUT_BUCKET = os.environ["INPUT_BUCKET"]
 INPUT_KEY = os.environ["INPUT_KEY"]
 OUTPUT_KEY = os.environ["OUTPUT_KEY"]
 BEDROCK_MODEL_ID = os.environ["BEDROCK_MODEL_ID"]
+ENABLE_BEDROCK = os.environ.get("ENABLE_BEDROCK", "true").lower() == "true"
 
 
 def analyze(resources):
@@ -81,48 +82,52 @@ Data:
 {json.dumps(data)}
 """
 
-        response_bedrock = bedrock.invoke_model(
-            modelId=BEDROCK_MODEL_ID,
-            body=json.dumps({
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "text": prompt
-                            }
-                        ]
-                    }
-                ]
-            }),
-            contentType="application/json",
-            accept="application/json"
-        )
+        result_text = None
 
-        result_text = json.loads(response_bedrock["body"].read())
-        print(f"Bedrock response: {result_text}")
+        if ENABLE_BEDROCK:
+            response_bedrock = bedrock.invoke_model(
+                modelId=BEDROCK_MODEL_ID,
+                body=json.dumps({
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "text": prompt
+                                }
+                            ]
+                        }
+                    ]
+                }),
+                contentType="application/json",
+                accept="application/json"
+            )
+
+            result_text = json.loads(response_bedrock["body"].read())
+            print(f"Bedrock response: {result_text}")
+        else:
+            print("Bedrock disabled")
 
         rules_results = analyze(data)
 
         print(f"Generated {len(rules_results)} rules-based recommendations")
 
+        final_output = {
+            "rules_based_results": rules_results,
+            "bedrock_response": result_text
+        }
+
         s3.put_object(
             Bucket=INPUT_BUCKET,
             Key=OUTPUT_KEY,
-            Body=json.dumps({
-                "rules_based_results": rules_results,
-                "bedrock_response": result_text
-            })
+            Body=json.dumps(final_output)
         )
 
         print(f"Results written to {OUTPUT_KEY}")
 
         return {
             "statusCode": 200,
-            "body": json.dumps({
-                "rules_based_results": rules_results,
-                "bedrock_response": result_text
-            })
+            "body": json.dumps(final_output)
         }
 
     except Exception as e:
