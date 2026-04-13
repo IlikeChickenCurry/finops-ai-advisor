@@ -26,11 +26,12 @@ resource "aws_lambda_function" "finops_analyzer" {
 
   environment {
     variables = {
-      INPUT_BUCKET     = aws_s3_bucket.project_data.bucket
-      INPUT_KEY        = var.input_key
-      OUTPUT_KEY       = var.output_key
-      ENABLE_BEDROCK   = var.enable_bedrock
-      BEDROCK_MODEL_ID = var.bedrock_model_id
+      INPUT_BUCKET        = aws_s3_bucket.project_data.bucket
+      INPUT_KEY           = var.input_key
+      OUTPUT_KEY          = var.output_key
+      ENABLE_BEDROCK      = var.enable_bedrock
+      BEDROCK_MODEL_ID    = var.bedrock_model_id
+      ENABLE_RULES_ENGINE = var.enable_rules_engine
     }
   }
 

@@ -39,3 +39,9 @@ variable "bedrock_model_id" {
   type        = string
   default     = "amazon.nova-lite-v1:0"
 }
+
+variable "enable_rules_engine" {
+  description = "Enable rules-based analysis"
+  type        = string
+  default     = "true"
+}

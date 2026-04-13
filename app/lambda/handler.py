@@ -10,7 +10,7 @@ INPUT_KEY = os.environ["INPUT_KEY"]
 OUTPUT_KEY = os.environ["OUTPUT_KEY"]
 BEDROCK_MODEL_ID = os.environ["BEDROCK_MODEL_ID"]
 ENABLE_BEDROCK = os.environ.get("ENABLE_BEDROCK", "true").lower() == "true"
-
+ENABLE_RULES_ENGINE = os.environ.get("ENABLE_RULES_ENGINE", "true").lower() == "true"
 
 def analyze(resources):
     recommendations = []
@@ -113,9 +113,12 @@ Data:
         else:
             print("Bedrock disabled")
 
-        rules_results = analyze(data)
-
-        print(f"Generated {len(rules_results)} rules-based recommendations")
+        if ENABLE_RULES_ENGINE:
+            rules_results = analyze(data)
+            print(f"Generated {len(rules_results)} rules-based recommendations")
+        else:
+            rules_results = []
+            print("Rules engine disabled")
 
         final_output = {
             "rules_based_results": rules_results,
